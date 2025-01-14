@@ -4,7 +4,11 @@ namespace SpriteKind {
     export const finalDest = SpriteKind.create()
 }
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
-    hero.vy = Gravity
+    if (hero.vy == 0) {
+        hero.vy = jump_velocity
+    } else {
+    	
+    }
 })
 function spawnAll () {
     spawnPlayer()
@@ -112,8 +116,10 @@ scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.hazardLava1, function (sp
     game.gameOver(false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
-    sprites.destroy(otherSprite)
+    otherSprite.vy = -10
+    pause(500)
     info.changeScoreBy(coinValue)
+    sprites.destroy(otherSprite)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.plant, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
@@ -181,7 +187,7 @@ function spawnPlayer () {
             . . . . . f f . . f f . . . . . 
             `, SpriteKind.Player)
         controller.moveSprite(hero, movement_speed, 0)
-        hero.ay = Jump_accel
+        hero.ay = Gravity
         scene.cameraFollowSprite(hero)
         tiles.placeOnTile(hero, value)
         tiles.setTileAt(value, assets.tile`transparency16`)
@@ -241,20 +247,20 @@ let endFlag: Sprite = null
 let mush: Sprite = null
 let coin: Sprite = null
 let hero: Sprite = null
+let jump_velocity = 0
 let coinValue = 0
 let highestEnemySpeed = 0
 let lowestEnemySpeed = 0
 let movement_speed = 0
-let Jump_accel = 0
 let Gravity = 0
 let currentLevel = 0
 currentLevel = 0
-Gravity = -200
-Jump_accel = 500
+Gravity = 500
 movement_speed = 100
 lowestEnemySpeed = 20
 highestEnemySpeed = 40
 coinValue = 5
+jump_velocity = -250
 info.startCountdown(0.5)
 info.setScore(0)
 info.setLife(3)
