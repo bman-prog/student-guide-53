@@ -2,12 +2,17 @@ namespace SpriteKind {
     export const destinaiton = SpriteKind.create()
     export const plant = SpriteKind.create()
     export const finalDest = SpriteKind.create()
+    export const ghost = SpriteKind.create()
 }
+scene.onHitWall(SpriteKind.Player, function (sprite, location) {
+    if (hero.isHittingTile(CollisionDirection.Bottom)) {
+        number_of_jumps = 0
+    }
+})
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (hero.vy == 0) {
+    if (number_of_jumps < max_jumps) {
+        number_of_jumps += 1
         hero.vy = jump_velocity
-    } else {
-    	
     }
 })
 function spawnAll () {
@@ -34,6 +39,14 @@ function spawnCoin () {
         tiles.setTileAt(value, assets.tile`transparency16`)
     }
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.ghost, function (sprite, otherSprite) {
+    if (hero.x < badGuy.x) {
+        badGuy.vx = 100
+    } else {
+        badGuy.vx = -10
+    }
+    info.changeScoreBy(100)
+})
 function spawnMush () {
     for (let value of tiles.getTilesByType(assets.tile`myTile2`)) {
         mush = sprites.create(img`
@@ -58,9 +71,37 @@ function spawnMush () {
         tiles.setTileAt(value, assets.tile`transparency16`)
     }
 }
-sprites.onOverlap(SpriteKind.Player, SpriteKind.finalDest, function (sprite, otherSprite) {
-	
-})
+function SpawnbadGhost () {
+    for (let value of tiles.getTilesByType(assets.tile`myTile`)) {
+        EnGhost = sprites.create(img`
+            ........................
+            ........................
+            ........................
+            ........................
+            ..........6666..........
+            ........66888866........
+            .......6888888886.......
+            .......6888888886.......
+            ......688888888886......
+            ......688888888886......
+            ......688888888886......
+            ......688758857886......
+            ......688758857886......
+            .......6888888886.......
+            ......6668888886666.....
+            ....6688888686888866....
+            ....6888886666888886....
+            ....6868666666868686....
+            .........666666.........
+            ...........666..........
+            ........................
+            ........................
+            ........................
+            ........................
+            `, SpriteKind.ghost)
+        tiles.setTileAt(value, assets.tile`transparency16`)
+    }
+}
 function loadLevel () {
     if (currentLevel == 0) {
     	
@@ -116,8 +157,6 @@ scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.hazardLava1, function (sp
     game.gameOver(false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
-    otherSprite.vy = -10
-    pause(500)
     info.changeScoreBy(coinValue)
     sprites.destroy(otherSprite)
 })
@@ -193,6 +232,11 @@ function spawnPlayer () {
         tiles.setTileAt(value, assets.tile`transparency16`)
     }
 }
+scene.onHitWall(SpriteKind.ghost, function (sprite, location) {
+    badGuy.setKind(SpriteKind.Enemy)
+    badGuy.vy = 0
+    badGuy.vx = 60
+})
 function spawnEnemy () {
     for (let value of tiles.getTilesByType(assets.tile`myTile3`)) {
         badGuy = sprites.create(img`
@@ -233,20 +277,60 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.destinaiton, function (sprite, o
     loadLevel()
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    if (hero.y < badGuy.y) {
+        otherSprite.startEffect(effects.fire, 500)
+        otherSprite.setVelocity(0, 0)
+        otherSprite.follow(hero, 0)
+        badGuy = sprites.create(img`
+            ........................
+            ........................
+            ........................
+            ........................
+            ..........6666..........
+            ........66888866........
+            .......6888888886.......
+            .......6888888886.......
+            ......688888888886......
+            ......688888888886......
+            ......688888888886......
+            ......688758857886......
+            ......688758857886......
+            .......6888888886.......
+            ......6668888886666.....
+            ....6688888686888866....
+            ....6888886666888886....
+            ....6868666666868686....
+            .........666666.........
+            ...........666..........
+            ........................
+            ........................
+            ........................
+            ........................
+            `, SpriteKind.ghost)
+        badGuy.setPosition(otherSprite.x, otherSprite.y)
+        badGuy.setVelocity(0, 50)
+        badGuy.setBounceOnWall(true)
+        info.changeLifeBy(1)
+    } else {
+        info.changeLifeBy(-1)
+    }
     sprites.destroy(otherSprite)
-    info.changeLifeBy(-1)
 })
 function destroyAll () {
     sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     sprites.destroyAllSpritesOfKind(SpriteKind.Food)
     sprites.destroyAllSpritesOfKind(SpriteKind.Player)
+    sprites.destroyAllSpritesOfKind(SpriteKind.ghost)
 }
-let badGuy: Sprite = null
 let flag: Sprite = null
 let endFlag: Sprite = null
+let EnGhost: Sprite = null
 let mush: Sprite = null
+let badGuy: Sprite = null
 let coin: Sprite = null
+let number_of_jumps = 0
 let hero: Sprite = null
+let max_jumps = 0
 let jump_velocity = 0
 let coinValue = 0
 let highestEnemySpeed = 0
@@ -261,6 +345,7 @@ lowestEnemySpeed = 20
 highestEnemySpeed = 40
 coinValue = 5
 jump_velocity = -250
+max_jumps = 2
 info.startCountdown(0.5)
 info.setScore(0)
 info.setLife(3)
